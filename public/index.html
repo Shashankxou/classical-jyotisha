@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classical Jyotisha - Parashari System</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Classical Jyotisha</h1>
+      <p class="subtitle">Parashari Method | Brihat Parashara Hora Shastra & Brihat Jataka</p>
+      <p class="warning">⚠️ Sidereal Zodiac | Lahiri Ayanamsa | No Modern Interpretations</p>
+    </header>
+
+    <main>
+      <section class="input-section">
+        <h2>Birth Data (Janma Patrika)</h2>
+        <form id="birthForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" id="date" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Time of Birth (24hr)</label>
+              <div class="time-input">
+                <input type="number" id="hour" min="0" max="23" placeholder="HH" required>
+                <span>:</span>
+                <input type="number" id="minute" min="0" max="59" placeholder="MM" required>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Latitude</label>
+              <input type="number" id="latitude" step="0.0001" placeholder="e.g., 28.6139" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Longitude</label>
+              <input type="number" id="longitude" step="0.0001" placeholder="e.g., 77.2090" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Timezone Offset (UTC)</label>
+              <input type="number" id="timezone" step="0.5" placeholder="e.g., 5.5 for IST" required>
+            </div>
+          </div>
+          
+          <button type="submit" class="calculate-btn">Calculate Chart (Kundali)</button>
+        </form>
+      </section>
+
+      <section id="resultsSection" class="results-section" style="display: none;">
+        <h2>Chart Analysis (Kundali Vishleshan)</h2>
+        
+        <div class="analysis-grid">
+          <div class="card">
+            <h3>Lagna (Ascendant)</h3>
+            <div id="lagnaInfo"></div>
+          </div>
+          
+          <div class="card">
+            <h3>Metadata</h3>
+            <div id="metadataInfo"></div>
+          </div>
+        </div>
+
+        <div class="card grahas-card">
+          <h3>Graha Positions (Planetary Positions)</h3>
+          <div id="grahasTable"></div>
+        </div>
+
+        <div class="card">
+          <h3>Classical Analysis</h3>
+          <div id="analysisText"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Based strictly on Brihat Parashara Hora Shastra and Brihat Jataka</p>
+      <p>No Western astrology. No pop spirituality. No motivational language.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
