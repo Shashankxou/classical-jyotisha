@@ -165,7 +165,7 @@ const NAKSHATRAS = [
   { name: 'Revati', lord: 3, start: 346.666667 }
 ];
 
-const DASHA_PERIODS = [6, 10, 7, 17, 16, 20, 19, 7, 18];
+const DASHA_PERIODS = [6, 10, 7, 18, 16, 20, 19, 7, 17]; // Corrected: Mercury=17, Ketu=7
 const RASHI_LORDS = [2, 5, 3, 1, 0, 3, 5, 2, 4, 6, 6, 4];
 const NATURAL_BENEFICS = [1, 3, 4, 5];
 const NATURAL_MALEFICS = [0, 2, 6];
@@ -238,20 +238,99 @@ function getGrahaDrishti(grahaIndex) {
   return aspects;
 }
 
-function calculateNavamsa(longitude) {
+// All 16 Vargas (Shodasha Varga) - BPHS Chapter 6
+function calculateVarga(longitude, divisor, oddEven = 'standard') {
   const rashi = getRashi(longitude);
   const degree = getDegreeInRashi(longitude);
-  const navamsaPart = Math.floor(degree / 3.333333);
+  const part = Math.floor(degree / (30 / divisor));
   const isOdd = rashi % 2 === 0;
-  return isOdd ? (rashi + navamsaPart) % 12 : ((rashi + 8) + navamsaPart) % 12;
+  
+  if (oddEven === 'standard') {
+    return isOdd ? (rashi + part) % 12 : ((rashi + 8) + part) % 12;
+  } else if (oddEven === 'movable') {
+    const movable = [0, 3, 6, 9];
+    if (movable.includes(rashi)) return (rashi + part) % 12;
+    const fixed = [1, 4, 7, 10];
+    if (fixed.includes(rashi)) return ((rashi + 4) + part) % 12;
+    return ((rashi + 8) + part) % 12;
+  }
+  return (rashi + part) % 12;
 }
 
-function calculateDashamsa(longitude) {
-  const rashi = getRashi(longitude);
-  const degree = getDegreeInRashi(longitude);
-  const dashamsaPart = Math.floor(degree / 3);
-  const isOdd = rashi % 2 === 0;
-  return isOdd ? (rashi + dashamsaPart) % 12 : ((rashi + 8) + dashamsaPart) % 12;
+function calculateAllVargas(longitude) {
+  return {
+    D1: getRashi(longitude),  // Rashi
+    D2: calculateVarga(longitude, 2),  // Hora
+    D3: calculateVarga(longitude, 3),  // Drekkana
+    D4: calculateVarga(longitude, 4),  // Chaturthamsa
+    D5: calculateVarga(longitude, 5),  // Panchamsa
+    D6: calculateVarga(longitude, 6),  // Shashthamsa
+    D7: calculateVarga(longitude, 7),  // Saptamsa
+    D8: calculateVarga(longitude, 8),  // Ashtamsa
+    D9: calculateVarga(longitude, 9),  // Navamsa
+    D10: calculateVarga(longitude, 10), // Dashamsa
+    D11: calculateVarga(longitude, 11), // Rudramsa
+    D12: calculateVarga(longitude, 12), // Dwadasamsa
+    D16: calculateVarga(longitude, 16), // Shodasamsa
+    D20: calculateVarga(longitude, 20), // Vimsamsa
+    D24: calculateVarga(longitude, 24), // Chaturvimsamsa
+    D27: calculateVarga(longitude, 27), // Saptavimsamsa
+    D30: calculateVarga(longitude, 30), // Trimsamsa
+    D40: calculateVarga(longitude, 40), // Khavedamsa
+    D45: calculateVarga(longitude, 45), // Akshavedamsa
+    D60: calculateVarga(longitude, 60)  // Shashtiamsa
+  };
+}
+
+// Antardasha and Pratyantardasha calculation
+function calculateSubPeriods(mahadashaLord, mahadashaStart, mahadashaYears) {
+  const antardashas = [];
+  const pratyantardashas = [];
+  let currentDate = new Date(mahadashaStart);
+  
+  // Antardasha (sub-periods within Mahadasha)
+  for (let i = 0; i < 9; i++) {
+    const antarLord = (mahadashaLord + i) % 9;
+    const antarYears = (DASHA_PERIODS[mahadashaLord] * DASHA_PERIODS[antarLord]) / 120;
+    
+    const endDate = new Date(currentDate);
+    endDate.setFullYear(endDate.getFullYear() + Math.floor(antarYears));
+    endDate.setMonth(endDate.getMonth() + Math.round((antarYears % 1) * 12));
+    
+    // Pratyantardasha (sub-sub-periods within Antardasha)
+    const pratyantars = [];
+    let pratyantarDate = new Date(currentDate);
+    
+    for (let j = 0; j < 9; j++) {
+      const pratyantarLord = (antarLord + j) % 9;
+      const pratyantarYears = (DASHA_PERIODS[antarLord] * DASHA_PERIODS[pratyantarLord]) / 120;
+      
+      const pratyantarEnd = new Date(pratyantarDate);
+      pratyantarEnd.setFullYear(pratyantarEnd.getFullYear() + Math.floor(pratyantarYears));
+      pratyantarEnd.setMonth(pratyantarEnd.getMonth() + Math.round((pratyantarYears % 1) * 12));
+      
+      pratyantars.push({
+        lord: GRAHA_NAMES[pratyantarLord],
+        startDate: pratyantarDate.toISOString().split('T')[0],
+        endDate: pratyantarEnd.toISOString().split('T')[0],
+        years: pratyantarYears.toFixed(4)
+      });
+      
+      pratyantarDate = pratyantarEnd;
+    }
+    
+    antardashas.push({
+      lord: GRAHA_NAMES[antarLord],
+      startDate: currentDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+      years: antarYears.toFixed(3),
+      pratyantardashas: pratyantars
+    });
+    
+    currentDate = endDate;
+  }
+  
+  return antardashas;
 }
 
 function calculateVimshottariDasha(moonLongitude, birthDate) {
@@ -279,17 +358,206 @@ function calculateVimshottariDasha(moonLongitude, birthDate) {
     endDate.setFullYear(endDate.getFullYear() + Math.floor(actualYears));
     endDate.setMonth(endDate.getMonth() + Math.round((actualYears % 1) * 12));
     
+    // Calculate Antardashas for this Mahadasha
+    const antardashas = calculateSubPeriods(planetIndex, currentDate.toISOString().split('T')[0], actualYears);
+    
     dashas.push({
       planet: GRAHA_NAMES[planetIndex],
       startDate: currentDate.toISOString().split('T')[0],
       endDate: endDate.toISOString().split('T')[0],
-      years: actualYears.toFixed(2)
+      years: actualYears.toFixed(2),
+      antardashas: antardashas
     });
     
     currentDate = endDate;
   }
   
   return { nakshatra: nakshatra.name, dashas };
+}
+
+// Advanced Yogas Detection
+function detectAdvancedYogas(grahas, lagnaRashi, lagnaLord) {
+  const yogas = [];
+  
+  // DHANA YOGAS (Wealth)
+  // 1. Lord of 2nd and 11th in mutual kendras
+  const lord2 = RASHI_LORDS[(lagnaRashi + 1) % 12];
+  const lord11 = RASHI_LORDS[(lagnaRashi + 10) % 12];
+  const diff2_11 = Math.abs(grahas[lord2].bhavaIndex - grahas[lord11].bhavaIndex);
+  if ([1, 4, 7, 10].includes(diff2_11)) {
+    yogas.push({ name: 'Dhana Yoga (Type 1)', type: 'Wealth', description: 'Lords of 2nd and 11th in mutual Kendras - Strong wealth accumulation' });
+  }
+  
+  // 2. Jupiter-Venus conjunction in Kendra
+  const jupiterBhava = grahas[4].bhavaIndex;
+  const venusBhava = grahas[5].bhavaIndex;
+  if (jupiterBhava === venusBhava && [1, 4, 7, 10].includes(jupiterBhava)) {
+    yogas.push({ name: 'Dhana Yoga (Jupiter-Venus)', type: 'Wealth', description: 'Jupiter and Venus conjunct in Kendra - Prosperity and luxury' });
+  }
+  
+  // 3. Lord of 9th in 10th or vice versa
+  const lord9 = RASHI_LORDS[(lagnaRashi + 8) % 12];
+  const lord10 = RASHI_LORDS[(lagnaRashi + 9) % 12];
+  if (grahas[lord9].bhavaIndex === 10 || grahas[lord10].bhavaIndex === 9) {
+    yogas.push({ name: 'Dharma-Karma Adhipati Yoga', type: 'Wealth/Status', description: 'Lords of 9th and 10th exchange - Fortune through career' });
+  }
+  
+  // RAJA YOGAS (Power/Status)
+  // 1. Kendra-Trikona lords in conjunction
+  const kendraLords = [0, 3, 6, 9].map(h => RASHI_LORDS[(lagnaRashi + h) % 12]);
+  const trikonaLords = [0, 4, 8].map(h => RASHI_LORDS[(lagnaRashi + h) % 12]);
+  
+  kendraLords.forEach(kl => {
+    trikonaLords.forEach(tl => {
+      if (kl !== tl && grahas[kl].bhavaIndex === grahas[tl].bhavaIndex) {
+        yogas.push({ name: 'Raja Yoga (Kendra-Trikona)', type: 'Power', description: `${GRAHA_NAMES[kl]} and ${GRAHA_NAMES[tl]} conjunct - Royal combination` });
+      }
+    });
+  });
+  
+  // 2. Exalted planets in Kendras
+  grahas.forEach((g, i) => {
+    if (g.dignity.includes('Exalted') && [1, 4, 7, 10].includes(g.bhavaIndex)) {
+      yogas.push({ name: 'Raja Yoga (Exalted in Kendra)', type: 'Power', description: `${g.name} exalted in ${g.bhava} - High status and authority` });
+    }
+  });
+  
+  // DARIDRA YOGAS (Poverty)
+  // 1. Lord of Lagna in 6th, 8th, or 12th
+  if ([6, 8, 12].includes(lagnaLord.bhavaIndex)) {
+    yogas.push({ name: 'Daridra Yoga (Type 1)', type: 'Poverty', description: 'Lagna lord in Dusthana - Financial struggles' });
+  }
+  
+  // 2. Lords of 2nd and 11th in 6th, 8th, or 12th
+  if ([6, 8, 12].includes(grahas[lord2].bhavaIndex) && [6, 8, 12].includes(grahas[lord11].bhavaIndex)) {
+    yogas.push({ name: 'Daridra Yoga (Type 2)', type: 'Poverty', description: 'Wealth lords in Dusthanas - Difficulty accumulating wealth' });
+  }
+  
+  // ARISHTA YOGAS (Misfortune)
+  // 1. Malefics in Kendras without benefic aspect
+  const malefics = [0, 2, 6, 7, 8];
+  malefics.forEach(mi => {
+    if ([1, 4, 7, 10].includes(grahas[mi].bhavaIndex)) {
+      yogas.push({ name: 'Arishta Yoga (Malefic in Kendra)', type: 'Misfortune', description: `${GRAHA_NAMES[mi]} in ${grahas[mi].bhava} - Obstacles and challenges` });
+    }
+  });
+  
+  // 2. Moon in 6th, 8th, or 12th with malefic aspect
+  const moonBhava = grahas[1].bhavaIndex;
+  if ([6, 8, 12].includes(moonBhava)) {
+    yogas.push({ name: 'Arishta Yoga (Moon in Dusthana)', type: 'Misfortune', description: 'Moon in malefic house - Mental stress and health issues' });
+  }
+  
+  return yogas;
+}
+
+// Transit System (Gochara)
+function calculateTransits(currentJD, birthGrahas, ayanamsa) {
+  const transits = [];
+  
+  for (let i = 0; i < 7; i++) { // Exclude Rahu/Ketu for now
+    const currentPos = getPlanetPosition(currentJD, Object.values(GRAHAS)[i]);
+    const siderealLong = toSidereal(currentPos.longitude, ayanamsa);
+    const currentRashi = getRashi(siderealLong);
+    const birthRashi = birthGrahas[i].rashiIndex;
+    
+    const diff = (currentRashi - birthRashi + 12) % 12 + 1;
+    
+    transits.push({
+      planet: GRAHA_NAMES[i],
+      currentRashi: RASHI_NAMES[currentRashi],
+      birthRashi: RASHI_NAMES[birthRashi],
+      houseFromBirth: diff,
+      effect: getTransitEffect(i, diff)
+    });
+  }
+  
+  return transits;
+}
+
+function getTransitEffect(planetIndex, house) {
+  const effects = {
+    0: { // Sun
+      1: 'Health issues, ego conflicts', 3: 'Courage, new ventures', 6: 'Victory over enemies',
+      10: 'Career advancement', 11: 'Gains and recognition'
+    },
+    1: { // Moon
+      1: 'Emotional turbulence', 3: 'Mental peace', 6: 'Health concerns',
+      10: 'Professional success', 11: 'Financial gains'
+    },
+    4: { // Jupiter
+      1: 'Wisdom, spiritual growth', 2: 'Wealth increase', 5: 'Children, creativity',
+      7: 'Marriage prospects', 9: 'Fortune, travel', 11: 'Major gains'
+    },
+    6: { // Saturn
+      1: 'Sade Sati begins - challenges', 3: 'Hard work pays off', 6: 'Victory through perseverance',
+      10: 'Career responsibilities', 11: 'Delayed but sure gains'
+    }
+  };
+  
+  return effects[planetIndex]?.[house] || 'Neutral';
+}
+
+// Varshaphala (Annual Chart)
+function calculateVarshaphala(birthJD, birthYear, currentYear, latitude, longitude, ayanamsa) {
+  // Calculate Solar Return (when Sun returns to birth position)
+  const birthSunPos = getPlanetPosition(birthJD, GRAHAS.SUN);
+  const birthSunSidereal = toSidereal(birthSunPos.longitude, ayanamsa);
+  
+  // Approximate JD for current year's solar return
+  const yearDiff = currentYear - birthYear;
+  const approxJD = birthJD + (yearDiff * 365.25);
+  
+  // Find exact solar return
+  let solarReturnJD = approxJD;
+  for (let i = 0; i < 10; i++) {
+    const currentSunPos = getPlanetPosition(solarReturnJD, GRAHAS.SUN);
+    const currentSunSidereal = toSidereal(currentSunPos.longitude, ayanamsa);
+    const diff = birthSunSidereal - currentSunSidereal;
+    if (Math.abs(diff) < 0.01) break;
+    solarReturnJD += diff / 1.0; // Adjust
+  }
+  
+  const varshaphalLagna = toSidereal(getAscendant(solarReturnJD, latitude, longitude), ayanamsa);
+  
+  return {
+    year: currentYear,
+    solarReturnDate: new Date((solarReturnJD - 2440587.5) * 86400000).toISOString().split('T')[0],
+    varshaphalLagna: RASHI_NAMES[getRashi(varshaphalLagna)],
+    interpretation: 'Annual chart for year-specific predictions'
+  };
+}
+
+// Argala (Intervention) and Arudha (Perceived Reality)
+function calculateArgalaArudha(grahas, lagnaLongitude) {
+  const argala = [];
+  const arudha = [];
+  
+  // Argala: Planets in 2nd, 4th, 11th from a house cause intervention
+  grahas.forEach((g, i) => {
+    const interventionHouses = [2, 4, 11];
+    interventionHouses.forEach(offset => {
+      const targetHouse = (g.bhavaIndex + offset - 1) % 12 + 1;
+      argala.push({
+        planet: g.name,
+        intervenes: `House ${targetHouse}`,
+        type: offset === 11 ? 'Strong' : 'Moderate'
+      });
+    });
+  });
+  
+  // Arudha Lagna (AL): Perceived self
+  const lagnaLordIndex = RASHI_LORDS[getRashi(lagnaLongitude)];
+  const lagnaLordBhava = grahas[lagnaLordIndex].bhavaIndex;
+  const arudhaLagna = (lagnaLordBhava + lagnaLordBhava - 1) % 12 + 1;
+  
+  arudha.push({
+    type: 'Arudha Lagna (AL)',
+    house: arudhaLagna,
+    meaning: 'How the world perceives you'
+  });
+  
+  return { argala: argala.slice(0, 10), arudha }; // Limit argala output
 }
 
 function checkNeechaBhanga(grahaIndex, rashi, grahas, lagnaRashi) {
@@ -461,8 +729,7 @@ app.post('/api/calculate-chart', (req, res) => {
       const bhava = getBhavaFromLagna(longitude, siderealLagna);
       const dignity = getGrahaDignity(i, rashi);
       const drishti = getGrahaDrishti(i);
-      const navamsa = calculateNavamsa(longitude);
-      const dashamsa = calculateDashamsa(longitude);
+      const allVargas = calculateAllVargas(longitude);
       
       grahas.push({
         name: GRAHA_NAMES[i],
@@ -474,8 +741,9 @@ app.post('/api/calculate-chart', (req, res) => {
         bhavaIndex: bhava,
         dignity: dignity,
         drishti: drishti,
-        navamsa: RASHI_NAMES[navamsa],
-        dashamsa: RASHI_NAMES[dashamsa],
+        vargas: allVargas,
+        navamsa: RASHI_NAMES[allVargas.D9],
+        dashamsa: RASHI_NAMES[allVargas.D10],
         speed: speed.toFixed(4),
         isRetrograde: speed < 0,
         remedies: PLANETARY_REMEDIES[i]
@@ -503,7 +771,18 @@ app.post('/api/calculate-chart', (req, res) => {
     const dashaSystem = calculateVimshottariDasha(parseFloat(moonLongitude), birthDate);
     
     const yogas = detectYogas(grahas, lagnaRashi);
+    const advancedYogas = detectAdvancedYogas(grahas, lagnaRashi, lagnaLord);
     const ashtakavarga = calculateAshtakavarga(grahas);
+    
+    // Current transits
+    const currentJD = getJulianDay(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate(), 12, 0);
+    const transits = calculateTransits(currentJD, grahas, ayanamsa);
+    
+    // Varshaphala for current year
+    const varshaphala = calculateVarshaphala(jd, year, new Date().getFullYear(), latitude, longitude, ayanamsa);
+    
+    // Argala and Arudha
+    const { argala, arudha } = calculateArgalaArudha(grahas, siderealLagna);
     
     res.json({
       success: true,
@@ -514,17 +793,22 @@ app.post('/api/calculate-chart', (req, res) => {
         rashiIndex: lagnaRashi,
         degree: lagnaDegree.toFixed(2),
         lord: lagnaLord.name,
-        navamsa: RASHI_NAMES[calculateNavamsa(siderealLagna)]
+        navamsa: RASHI_NAMES[calculateAllVargas(siderealLagna).D9]
       },
       grahas: grahas,
       bhavaAnalysis: bhavaAnalysis,
       shadbala: shadbala,
       vimshottariDasha: dashaSystem,
       yogas: yogas,
+      advancedYogas: advancedYogas,
       ashtakavarga: ashtakavarga.map((points, house) => ({
         house: BHAVA_NAMES[house],
         points: points
       })),
+      transits: transits,
+      varshaphala: varshaphala,
+      argala: argala,
+      arudha: arudha,
       metadata: {
         date: `${year}-${month}-${day}`,
         time: `${hour}:${minute}`,
@@ -545,4 +829,5 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Classical Jyotisha server running on port ${PORT}`);
+  console.log(`Features: 16 Vargas | Antardasha/Pratyantardasha | Advanced Yogas | Transits | Varshaphala | Argala/Arudha`);
 });
