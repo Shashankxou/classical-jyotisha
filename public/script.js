@@ -56,54 +56,16 @@ function displayResults(data) {
     <div class="info-item"><span class="info-label">Ayanamsa:</span><span class="info-value">${data.ayanamsa}°</span></div>
   `;
   
-  // Grahas Table
-  const grahasTable = document.getElementById('grahasTable');
-  let tableHTML = '<table><thead><tr><th>Graha</th><th>Rashi (D1)</th><th>Degree</th><th>Navamsa (D9)</th><th>Dashamsa (D10)</th><th>Bhava</th><th>Dignity</th><th>Retrograde</th></tr></thead><tbody>';
-  
-  data.grahas.forEach(graha => {
-    let dignityClass = '';
-    if (graha.dignity.includes('Exalted')) dignityClass = 'dignity-exalted';
-    if (graha.dignity.includes('Debilitated')) dignityClass = 'dignity-debilitated';
-    if (graha.dignity.includes('Own Sign')) dignityClass = 'dignity-own';
-    
-    const retrograde = graha.isRetrograde ? '(R)' : '';
-    
-    tableHTML += `<tr>
-      <td><strong>${graha.name}</strong></td>
-      <td>${graha.rashi}</td>
-      <td>${graha.degree}°</td>
-      <td>${graha.navamsa}</td>
-      <td>${graha.dashamsa}</td>
-      <td>${graha.bhava}</td>
-      <td class="${dignityClass}">${graha.dignity}</td>
-      <td>${retrograde}</td>
-    </tr>`;
-  });
-  
-  tableHTML += '</tbody></table>';
-  grahasTable.innerHTML = tableHTML;
+  // Grahas Table with All Vargas
+  displayGrahasWithVargas(data.grahas);
   
   // Bhava Analysis
   displayBhavaAnalysis(data.bhavaAnalysis);
   
-  // Vimshottari Dasha
-  const dashaSection = document.getElementById('dashaSection');
-  let dashaHTML = `<h4>Birth Nakshatra: ${data.vimshottariDasha.nakshatra}</h4>`;
-  dashaHTML += '<table><thead><tr><th>Planet</th><th>Start Date</th><th>End Date</th><th>Years</th></tr></thead><tbody>';
+  // Vimshottari Dasha with Antardasha/Pratyantardasha
+  displayDashaSystem(data.vimshottariDasha);
   
-  data.vimshottariDasha.dashas.forEach(dasha => {
-    dashaHTML += `<tr>
-      <td><strong>${dasha.planet}</strong></td>
-      <td>${dasha.startDate}</td>
-      <td>${dasha.endDate}</td>
-      <td>${dasha.years}</td>
-    </tr>`;
-  });
-  
-  dashaHTML += '</tbody></table>';
-  dashaSection.innerHTML = dashaHTML;
-  
-  // Yogas
+  // Classical Yogas
   const yogasSection = document.getElementById('yogasSection');
   if (data.yogas.length > 0) {
     let yogasHTML = '<ul>';
@@ -115,6 +77,9 @@ function displayResults(data) {
   } else {
     yogasSection.innerHTML = '<p>No major classical yogas detected in this chart.</p>';
   }
+  
+  // Advanced Yogas
+  displayAdvancedYogas(data.advancedYogas);
   
   // Shadbala
   const shadbalSection = document.getElementById('shadbalSection');
@@ -153,11 +118,197 @@ function displayResults(data) {
   ashtakavargaHTML += '</tbody></table>';
   ashtakavargaSection.innerHTML = ashtakavargaHTML;
   
+  // Transits
+  displayTransits(data.transits);
+  
+  // Varshaphala
+  displayVarshaphala(data.varshaphala);
+  
+  // Argala & Arudha
+  displayArgalaArudha(data.argala, data.arudha);
+  
   // Remedies Section
   displayRemedies(data.grahas, data.shadbala);
   
   // Classical Analysis
   generateAnalysis(data);
+}
+
+function displayGrahasWithVargas(grahas) {
+  const grahasTable = document.getElementById('grahasTable');
+  let tableHTML = '<table><thead><tr><th>Graha</th><th>Rashi (D1)</th><th>Degree</th><th>D9</th><th>D10</th><th>Bhava</th><th>Dignity</th><th>R</th><th>All Vargas</th></tr></thead><tbody>';
+  
+  grahas.forEach(graha => {
+    let dignityClass = '';
+    if (graha.dignity.includes('Exalted')) dignityClass = 'dignity-exalted';
+    if (graha.dignity.includes('Debilitated')) dignityClass = 'dignity-debilitated';
+    if (graha.dignity.includes('Own Sign')) dignityClass = 'dignity-own';
+    
+    const retrograde = graha.isRetrograde ? '(R)' : '';
+    
+    const vargasList = Object.entries(graha.vargas)
+      .map(([div, rashi]) => `${div}: ${['Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya', 'Tula', 'Vrishchika', 'Dhanus', 'Makara', 'Kumbha', 'Meena'][rashi]}`)
+      .join(', ');
+    
+    tableHTML += `<tr>
+      <td><strong>${graha.name}</strong></td>
+      <td>${graha.rashi}</td>
+      <td>${graha.degree}°</td>
+      <td>${graha.navamsa}</td>
+      <td>${graha.dashamsa}</td>
+      <td>${graha.bhava}</td>
+      <td class="${dignityClass}">${graha.dignity}</td>
+      <td>${retrograde}</td>
+      <td class="vargas-cell"><button onclick="showVargas('${graha.name}', '${vargasList}')">View 16 Vargas</button></td>
+    </tr>`;
+  });
+  
+  tableHTML += '</tbody></table>';
+  grahasTable.innerHTML = tableHTML;
+}
+
+function showVargas(planetName, vargasList) {
+  alert(`${planetName} - All 16 Vargas (Shodasha Varga):\n\n${vargasList.replace(/,/g, '\n')}`);
+}
+
+function displayDashaSystem(dashaSystem) {
+  const dashaSection = document.getElementById('dashaSection');
+  let dashaHTML = `<h4>Birth Nakshatra: ${dashaSystem.nakshatra}</h4>`;
+  
+  dashaSystem.dashas.forEach((dasha, index) => {
+    const isExpanded = index === 0; // Expand first Mahadasha by default
+    
+    dashaHTML += `
+      <div class="dasha-card">
+        <div class="dasha-header" onclick="toggleDasha('dasha-${index}')">
+          <strong>${dasha.planet} Mahadasha</strong>
+          <span>${dasha.startDate} to ${dasha.endDate} (${dasha.years} years)</span>
+        </div>
+        <div id="dasha-${index}" class="dasha-content" style="display: ${isExpanded ? 'block' : 'none'}">
+          <h5>Antardashas:</h5>
+          ${dasha.antardashas.map((antar, ai) => `
+            <div class="antar-card">
+              <div class="antar-header" onclick="toggleAntar('antar-${index}-${ai}')">
+                <strong>${antar.lord} Antardasha</strong>
+                <span>${antar.startDate} to ${antar.endDate} (${antar.years} years)</span>
+              </div>
+              <div id="antar-${index}-${ai}" class="antar-content" style="display: none">
+                <h6>Pratyantardashas:</h6>
+                <table class="pratyantar-table">
+                  <thead><tr><th>Lord</th><th>Start</th><th>End</th><th>Years</th></tr></thead>
+                  <tbody>
+                    ${antar.pratyantardashas.map(prat => `
+                      <tr>
+                        <td>${prat.lord}</td>
+                        <td>${prat.startDate}</td>
+                        <td>${prat.endDate}</td>
+                        <td>${prat.years}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  });
+  
+  dashaSection.innerHTML = dashaHTML;
+}
+
+function toggleDasha(id) {
+  const element = document.getElementById(id);
+  element.style.display = element.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleAntar(id) {
+  const element = document.getElementById(id);
+  element.style.display = element.style.display === 'none' ? 'block' : 'none';
+}
+
+function displayAdvancedYogas(yogas) {
+  const section = document.getElementById('advancedYogasSection');
+  if (!yogas || yogas.length === 0) {
+    section.innerHTML = '<p>No advanced yogas detected.</p>';
+    return;
+  }
+  
+  const categories = {
+    'Wealth': [],
+    'Power': [],
+    'Poverty': [],
+    'Misfortune': []
+  };
+  
+  yogas.forEach(yoga => {
+    if (categories[yoga.type]) {
+      categories[yoga.type].push(yoga);
+    }
+  });
+  
+  let html = '';
+  Object.entries(categories).forEach(([type, yogaList]) => {
+    if (yogaList.length > 0) {
+      const typeClass = type === 'Wealth' || type === 'Power' ? 'yoga-positive' : 'yoga-negative';
+      html += `<div class="yoga-category ${typeClass}">`;
+      html += `<h5>${type} Yogas</h5><ul>`;
+      yogaList.forEach(yoga => {
+        html += `<li><strong>${yoga.name}</strong>: ${yoga.description}</li>`;
+      });
+      html += `</ul></div>`;
+    }
+  });
+  
+  section.innerHTML = html;
+}
+
+function displayTransits(transits) {
+  const section = document.getElementById('transitsSection');
+  let html = '<table><thead><tr><th>Planet</th><th>Current Rashi</th><th>Birth Rashi</th><th>House from Birth</th><th>Effect</th></tr></thead><tbody>';
+  
+  transits.forEach(t => {
+    html += `<tr>
+      <td><strong>${t.planet}</strong></td>
+      <td>${t.currentRashi}</td>
+      <td>${t.birthRashi}</td>
+      <td>${t.houseFromBirth}</td>
+      <td>${t.effect}</td>
+    </tr>`;
+  });
+  
+  html += '</tbody></table>';
+  section.innerHTML = html;
+}
+
+function displayVarshaphala(varshaphala) {
+  const section = document.getElementById('varshaphalaSection');
+  section.innerHTML = `
+    <div class="info-item"><span class="info-label">Year:</span><span class="info-value">${varshaphala.year}</span></div>
+    <div class="info-item"><span class="info-label">Solar Return Date:</span><span class="info-value">${varshaphala.solarReturnDate}</span></div>
+    <div class="info-item"><span class="info-label">Varshaphala Lagna:</span><span class="info-value">${varshaphala.varshaphalLagna}</span></div>
+    <p>${varshaphala.interpretation}</p>
+  `;
+}
+
+function displayArgalaArudha(argala, arudha) {
+  const section = document.getElementById('argalaArudhaSection');
+  let html = '<h5>Arudha (Perceived Reality)</h5><ul>';
+  arudha.forEach(a => {
+    html += `<li><strong>${a.type}</strong>: House ${a.house} - ${a.meaning}</li>`;
+  });
+  html += '</ul>';
+  
+  html += '<h5>Argala (Intervention) - Sample</h5>';
+  html += '<p class="info-text">Showing first 10 interventions. Argala indicates how planets intervene in house matters.</p>';
+  html += '<ul>';
+  argala.slice(0, 10).forEach(a => {
+    html += `<li>${a.planet} intervenes in ${a.intervenes} (${a.type})</li>`;
+  });
+  html += '</ul>';
+  
+  section.innerHTML = html;
 }
 
 function displayBhavaAnalysis(bhavaAnalysis) {
@@ -331,91 +482,43 @@ function generateAnalysis(data) {
     analysis += '</p>';
   }
   
-  // Kendra Analysis
-  analysis += '<p><strong>Kendra Analysis:</strong> ';
-  const kendraGrahas = data.grahas.filter(g => [1, 4, 7, 10].includes(g.bhavaIndex));
-  if (kendraGrahas.length > 0) {
-    analysis += `Grahas in Kendras: ${kendraGrahas.map(g => g.name).join(', ')}. Kendras are Vishnu Sthanas (pillars). Benefics strengthen; malefics require assessment.`;
-  } else {
-    analysis += 'No grahas in Kendras. Reduces immediate strength.';
-  }
-  analysis += '</p>';
-  
-  // Trikona Analysis
-  analysis += '<p><strong>Trikona Analysis:</strong> ';
-  const trikonaGrahas = data.grahas.filter(g => [1, 5, 9].includes(g.bhavaIndex));
-  if (trikonaGrahas.length > 0) {
-    analysis += `Grahas in Trikonas: ${trikonaGrahas.map(g => g.name).join(', ')}. Trikonas are Lakshmi Sthanas (fortune houses). Highly auspicious for benefics.`;
-  } else {
-    analysis += 'No grahas in Trikonas beyond Lagna.';
-  }
-  analysis += '</p>';
-  
-  // Dusthana Analysis
-  analysis += '<p><strong>Dusthana Analysis (6th, 8th, 12th):</strong> ';
-  const dusthanaGrahas = data.grahas.filter(g => [6, 8, 12].includes(g.bhavaIndex));
-  if (dusthanaGrahas.length > 0) {
-    analysis += `Grahas in Dusthanas: ${dusthanaGrahas.map(g => g.name).join(', ')}. These houses represent obstacles, transformation, and loss. Natural malefics here can give strength to overcome; benefics may suffer unless well-dignified.`;
-  } else {
-    analysis += 'No grahas in Dusthanas. Reduces immediate obstacles.';
-  }
-  analysis += '</p>';
-  
-  // Yogas
-  if (data.yogas.length > 0) {
-    analysis += '<p><strong>Classical Yogas Detected:</strong></p><ul>';
-    data.yogas.forEach(yoga => {
-      analysis += `<li><strong>${yoga.name}</strong>: ${yoga.description}</li>`;
-    });
-    analysis += '</ul>';
+  // Advanced Yogas Summary
+  if (data.advancedYogas && data.advancedYogas.length > 0) {
+    analysis += '<p><strong>Advanced Yogas:</strong> ';
+    const wealthYogas = data.advancedYogas.filter(y => y.type === 'Wealth').length;
+    const powerYogas = data.advancedYogas.filter(y => y.type === 'Power').length;
+    const povertyYogas = data.advancedYogas.filter(y => y.type === 'Poverty').length;
+    const misfortuneYogas = data.advancedYogas.filter(y => y.type === 'Misfortune').length;
+    
+    analysis += `Detected ${wealthYogas} Dhana (Wealth), ${powerYogas} Raja (Power), ${povertyYogas} Daridra (Poverty), ${misfortuneYogas} Arishta (Misfortune) yogas. See Advanced Yogas section for details.`;
+    analysis += '</p>';
   }
   
-  // Vimshottari Dasha
-  const currentDasha = data.vimshottariDasha.dashas[0];
-  const currentDashaGraha = data.grahas.find(g => g.name === currentDasha.planet);
-  analysis += `<p><strong>Current Mahadasha:</strong> ${currentDasha.planet} Dasha running from ${currentDasha.startDate} to ${currentDasha.endDate} (${currentDasha.years} years). Birth Nakshatra: ${data.vimshottariDasha.nakshatra}. `;
-  if (currentDashaGraha) {
-    analysis += `${currentDasha.planet} is placed in ${currentDashaGraha.bhava} with ${currentDashaGraha.dignity} dignity. This period will activate the significations of the ${currentDashaGraha.bhava}.`;
-  }
-  analysis += '</p>';
-  
-  // Shadbala Summary
-  const strongPlanets = data.shadbala.filter(s => parseFloat(s.strength) > 5);
-  const weakPlanets = data.shadbala.filter(s => parseFloat(s.strength) < 3);
-  
-  if (strongPlanets.length > 0) {
-    analysis += `<p><strong>Strong Planets (Shadbala > 5 Rupas):</strong> ${strongPlanets.map(s => s.planet).join(', ')}. These planets deliver strong results and should be activated through their significations.`;
+  // Transit Summary
+  if (data.transits) {
+    analysis += '<p><strong>Current Transits:</strong> ';
+    const significantTransits = data.transits.filter(t => t.effect !== 'Neutral');
+    if (significantTransits.length > 0) {
+      analysis += `${significantTransits.length} planets in significant transit positions. See Transits section for current planetary movements and their effects.`;
+    } else {
+      analysis += 'No major transit effects at present.';
+    }
+    analysis += '</p>';
   }
   
-  if (weakPlanets.length > 0) {
-    analysis += `<p><strong>Weak Planets (Shadbala < 3 Rupas):</strong> ${weakPlanets.map(s => s.planet).join(', ')}. These planets struggle to deliver results and require remedial measures (see Remedies section).`;
+  // Varshaphala
+  if (data.varshaphala) {
+    analysis += `<p><strong>Annual Chart (Varshaphala):</strong> Solar return for year ${data.varshaphala.year} occurs on ${data.varshaphala.solarReturnDate} with Varshaphala Lagna in ${data.varshaphala.varshaphalLagna}. This provides year-specific predictions.</p>`;
   }
   
-  // Ashtakavarga Summary
-  const strongHouses = data.ashtakavarga.filter(a => a.points > 28);
-  if (strongHouses.length > 0) {
-    analysis += `<p><strong>Strong Houses (Ashtakavarga > 28 points):</strong> ${strongHouses.map(a => a.house).join(', ')}. Transits through these houses yield favorable results. Focus efforts on these life areas.`;
+  // Arudha
+  if (data.arudha && data.arudha.length > 0) {
+    analysis += `<p><strong>Arudha Lagna:</strong> ${data.arudha[0].type} is in House ${data.arudha[0].house}. This represents how the world perceives you, distinct from your actual self (Lagna).</p>`;
   }
   
-  // Retrograde Planets
-  const retrogradePlanets = data.grahas.filter(g => g.isRetrograde);
-  if (retrogradePlanets.length > 0) {
-    analysis += `<p><strong>Retrograde Planets:</strong> ${retrogradePlanets.map(g => g.name).join(', ')}. Retrograde motion indicates karmic revisitation, intensified results, and need to complete unfinished business from past lives in their significations.`;
-  }
+  analysis += '<p><strong>Methodology Note:</strong> Analysis based on complete Shodasha Varga (16 divisional charts), Vimshottari Dasha with Antardasha/Pratyantardasha, Advanced Yogas (Dhana/Raja/Daridra/Arishta), Current Transits (Gochara), Varshaphala (Annual Chart), and Argala/Arudha techniques. All calculations follow BPHS and classical Jataka texts.</p>';
   
-  analysis += '<p><strong>Spiritual Path Indicators:</strong> ';
-  const ninthHouseGrahas = data.grahas.filter(g => g.bhavaIndex === 9);
-  const twelfthHouseGrahas = data.grahas.filter(g => g.bhavaIndex === 12);
-  if (ninthHouseGrahas.length > 0 || twelfthHouseGrahas.length > 0) {
-    analysis += `Planets in 9th house (Dharma): ${ninthHouseGrahas.map(g => g.name).join(', ') || 'None'}. Planets in 12th house (Moksha): ${twelfthHouseGrahas.map(g => g.name).join(', ') || 'None'}. These placements indicate spiritual inclinations and the path to liberation.`;
-  } else {
-    analysis += 'Spiritual path requires conscious cultivation through sadhana.';
-  }
-  analysis += '</p>';
-  
-  analysis += '<p><strong>Methodology Note:</strong> Analysis based on Rashi (D1), Navamsa (D9), and Dashamsa (D10) charts. Vimshottari Dasha system per BPHS Chapter 46. Shadbala and Ashtakavarga calculations follow classical principles. Yogas detected per Parashari and Jataka Parijata standards. Remedies from BPHS, Lal Kitab, and traditional Vedic sources.</p>';
-  
-  analysis += '<p><strong>Limitations:</strong> Full interpretation requires deeper Varga analysis (all 16 divisions), Antardasha/Pratyantardasha periods, transit analysis, and Argala/Arudha considerations. This is a foundational analysis. Consult a qualified Jyotishi for personalized guidance.</p>';
+  analysis += '<p><strong>Limitations:</strong> This is a comprehensive analysis but still requires personalized interpretation by a qualified Jyotishi for life-specific guidance, timing of events, and remedial prioritization.</p>';
   
   analysis += '</div>';
   analysisText.innerHTML = analysis;
