@@ -127,11 +127,140 @@ function displayResults(data) {
   // Argala & Arudha
   displayArgalaArudha(data.argala, data.arudha);
   
+  // DEEP SECRETS - NEW SECTION
+  displayDeepSecrets(data.deepSecrets);
+  
   // Remedies Section
   displayRemedies(data.grahas, data.shadbala);
   
   // Classical Analysis
   generateAnalysis(data);
+}
+
+function displayDeepSecrets(secrets) {
+  const section = document.getElementById('deepSecretsSection');
+  
+  let html = '<div class="secrets-warning">⚠️ DEEP CHART ANALYSIS - UNFILTERED TRUTH ⚠️</div>';
+  
+  // Hidden Powers
+  if (secrets.hiddenPowers && secrets.hiddenPowers.length > 0) {
+    html += '<div class="secret-category powers">';
+    html += '<h4>🔮 HIDDEN POWERS & ABILITIES</h4>';
+    secrets.hiddenPowers.forEach(power => {
+      html += `
+        <div class="secret-card power-card">
+          <h5>${power.power}</h5>
+          <p class="secret-description">${power.description}</p>
+          <p class="secret-activation"><strong>Activation:</strong> ${power.activation}</p>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  // Karmic Secrets
+  if (secrets.karmicSecrets && secrets.karmicSecrets.length > 0) {
+    html += '<div class="secret-category karma">';
+    html += '<h4>⚡ KARMIC TRUTHS & PAST LIFE</h4>';
+    secrets.karmicSecrets.forEach(karma => {
+      html += `
+        <div class="secret-card karma-card">
+          <h5>${karma.secret}</h5>
+          ${karma.rahuHouse ? `<p><strong>Rahu (Obsession):</strong> ${karma.rahuHouse}th House | <strong>Ketu (Release):</strong> ${karma.ketuHouse}th House</p>` : ''}
+          <p class="secret-truth">${karma.truth}</p>
+          <p class="secret-remedy"><strong>Remedy:</strong> ${karma.remedy}</p>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  // Wealth Secrets
+  if (secrets.wealthSecrets && secrets.wealthSecrets.length > 0) {
+    html += '<div class="secret-category wealth">';
+    html += '<h4>💰 WEALTH SECRETS & MONEY KARMA</h4>';
+    secrets.wealthSecrets.forEach(wealth => {
+      html += `
+        <div class="secret-card wealth-card">
+          <h5>${wealth.secret}</h5>
+          <p class="secret-truth">${wealth.truth}</p>
+          ${wealth.activation ? `<p class="secret-activation"><strong>Activation:</strong> ${wealth.activation}</p>` : ''}
+          ${wealth.remedy ? `<p class="secret-remedy"><strong>Remedy:</strong> ${wealth.remedy}</p>` : ''}
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  // Relationship Secrets
+  if (secrets.relationshipSecrets && secrets.relationshipSecrets.length > 0) {
+    html += '<div class="secret-category relationship">';
+    html += '<h4>❤️ RELATIONSHIP SECRETS & MARRIAGE KARMA</h4>';
+    secrets.relationshipSecrets.forEach(rel => {
+      html += `
+        <div class="secret-card relationship-card">
+          <h5>${rel.secret}</h5>
+          <p class="secret-truth">${rel.truth}</p>
+          <p class="secret-remedy"><strong>REMEDY:</strong> ${rel.remedy}</p>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  // Health Secrets
+  if (secrets.healthSecrets && secrets.healthSecrets.length > 0) {
+    html += '<div class="secret-category health">';
+    html += '<h4>🏥 HEALTH VULNERABILITIES & HEALING</h4>';
+    secrets.healthSecrets.forEach(health => {
+      html += `
+        <div class="secret-card health-card">
+          <h5>${health.secret}</h5>
+          <p class="secret-truth">${health.truth}</p>
+          <p class="secret-remedy"><strong>REMEDY:</strong> ${health.remedy}</p>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  // Dasha Timing
+  if (secrets.dashaTiming && secrets.dashaTiming.length > 0) {
+    html += '<div class="secret-category timing">';
+    html += '<h4>⏰ CURRENT DASHA TIMING & PREDICTIONS</h4>';
+    secrets.dashaTiming.forEach(timing => {
+      html += `
+        <div class="secret-card timing-card">
+          <h5>${timing.period}</h5>
+          <p class="secret-truth">${timing.truth}</p>
+          <p class="secret-prediction">${timing.prediction}</p>
+          <p class="secret-remedy"><strong>Action:</strong> ${timing.remedy}</p>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  // Ultimate Truth
+  if (secrets.ultimateTruth && secrets.ultimateTruth.length > 0) {
+    html += '<div class="secret-category ultimate">';
+    html += '<h4>🕉️ ULTIMATE TRUTH - YOUR LIFE PURPOSE</h4>';
+    secrets.ultimateTruth.forEach(truth => {
+      html += `
+        <div class="secret-card ultimate-card">
+          <h5>${truth.truth}</h5>
+          <p class="secret-revelation">${truth.revelation}</p>
+          <p class="secret-action"><strong>YOUR DHARMA:</strong> ${truth.action}</p>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  // Final Warning
+  html += `<div class="final-warning">${secrets.finalWarning}</div>`;
+  
+  section.innerHTML = html;
 }
 
 function displayGrahasWithVargas(grahas) {
@@ -176,7 +305,7 @@ function displayDashaSystem(dashaSystem) {
   let dashaHTML = `<h4>Birth Nakshatra: ${dashaSystem.nakshatra}</h4>`;
   
   dashaSystem.dashas.forEach((dasha, index) => {
-    const isExpanded = index === 0; // Expand first Mahadasha by default
+    const isExpanded = index === 0;
     
     dashaHTML += `
       <div class="dasha-card">
@@ -338,7 +467,6 @@ function displayRemedies(grahas, shadbala) {
   const remediesSection = document.getElementById('remediesSection');
   let remediesHTML = '';
   
-  // Identify weak planets
   const weakPlanets = shadbala.filter(s => parseFloat(s.strength) < 3);
   const afflictedPlanets = grahas.filter(g => g.dignity.includes('Debilitated') || g.dignity.includes('Enemy'));
   
@@ -406,7 +534,6 @@ function displayRemedies(grahas, shadbala) {
     });
   }
   
-  // Universal remedies
   remediesHTML += `
     <div class="remedy-card universal">
       <h4>🌟 Universal Spiritual Practices (For All)</h4>
@@ -482,7 +609,6 @@ function generateAnalysis(data) {
     analysis += '</p>';
   }
   
-  // Advanced Yogas Summary
   if (data.advancedYogas && data.advancedYogas.length > 0) {
     analysis += '<p><strong>Advanced Yogas:</strong> ';
     const wealthYogas = data.advancedYogas.filter(y => y.type === 'Wealth').length;
@@ -494,7 +620,6 @@ function generateAnalysis(data) {
     analysis += '</p>';
   }
   
-  // Transit Summary
   if (data.transits) {
     analysis += '<p><strong>Current Transits:</strong> ';
     const significantTransits = data.transits.filter(t => t.effect !== 'Neutral');
@@ -506,17 +631,15 @@ function generateAnalysis(data) {
     analysis += '</p>';
   }
   
-  // Varshaphala
   if (data.varshaphala) {
     analysis += `<p><strong>Annual Chart (Varshaphala):</strong> Solar return for year ${data.varshaphala.year} occurs on ${data.varshaphala.solarReturnDate} with Varshaphala Lagna in ${data.varshaphala.varshaphalLagna}. This provides year-specific predictions.</p>`;
   }
   
-  // Arudha
   if (data.arudha && data.arudha.length > 0) {
     analysis += `<p><strong>Arudha Lagna:</strong> ${data.arudha[0].type} is in House ${data.arudha[0].house}. This represents how the world perceives you, distinct from your actual self (Lagna).</p>`;
   }
   
-  analysis += '<p><strong>Methodology Note:</strong> Analysis based on complete Shodasha Varga (16 divisional charts), Vimshottari Dasha with Antardasha/Pratyantardasha, Advanced Yogas (Dhana/Raja/Daridra/Arishta), Current Transits (Gochara), Varshaphala (Annual Chart), and Argala/Arudha techniques. All calculations follow BPHS and classical Jataka texts.</p>';
+  analysis += '<p><strong>Methodology Note:</strong> Analysis based on complete Shodasha Varga (16 divisional charts), Vimshottari Dasha with Antardasha/Pratyantardasha, Advanced Yogas (Dhana/Raja/Daridra/Arishta), Current Transits (Gochara), Varshaphala (Annual Chart), Argala/Arudha techniques, and Deep Secrets Analysis. All calculations follow BPHS and classical Jataka texts.</p>';
   
   analysis += '<p><strong>Limitations:</strong> This is a comprehensive analysis but still requires personalized interpretation by a qualified Jyotishi for life-specific guidance, timing of events, and remedial prioritization.</p>';
   
