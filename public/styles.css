@@ -13,7 +13,7 @@ body {
 }
 
 .container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -43,8 +43,9 @@ h1 {
 .warning {
   color: #ff6b6b;
   font-weight: bold;
-  font-size: 1.1em;
+  font-size: 1em;
   margin-top: 10px;
+  line-height: 1.8;
 }
 
 .input-section {
@@ -140,7 +141,7 @@ input:focus {
 
 .analysis-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 20px;
   margin-bottom: 20px;
 }
@@ -155,8 +156,15 @@ input:focus {
 
 .card h3 {
   color: #d4af37;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   font-size: 1.5em;
+}
+
+.card-subtitle {
+  color: #b8860b;
+  font-size: 0.9em;
+  margin-bottom: 15px;
+  font-style: italic;
 }
 
 .info-item {
@@ -191,19 +199,21 @@ thead {
 }
 
 th {
-  padding: 12px;
+  padding: 12px 8px;
   text-align: left;
   color: #d4af37;
   font-weight: bold;
   border-bottom: 2px solid #d4af37;
+  font-size: 0.95em;
 }
 
 td {
-  padding: 12px;
+  padding: 12px 8px;
   border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  font-size: 0.9em;
 }
 
-tr:hover {
+tbody tr:hover {
   background: rgba(212, 175, 55, 0.1);
 }
 
@@ -235,6 +245,21 @@ tr:hover {
   color: #d4af37;
 }
 
+.analysis-text ul {
+  margin-left: 20px;
+  margin-bottom: 15px;
+}
+
+.analysis-text li {
+  margin-bottom: 10px;
+}
+
+h4 {
+  color: #d4af37;
+  margin-bottom: 15px;
+  font-size: 1.2em;
+}
+
 footer {
   text-align: center;
   padding: 30px;
@@ -244,7 +269,11 @@ footer {
 }
 
 footer p {
-  margin: 5px 0;
+  margin: 8px 0;
+}
+
+footer strong {
+  color: #d4af37;
 }
 
 @media (max-width: 768px) {
@@ -261,10 +290,10 @@ footer p {
   }
   
   table {
-    font-size: 0.9em;
+    font-size: 0.85em;
   }
   
   th, td {
-    padding: 8px;
+    padding: 8px 4px;
   }
 }
