@@ -28,42 +28,144 @@ const GRAHA_NAMES = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Satu
 const RASHI_NAMES = ['Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya', 'Tula', 'Vrishchika', 'Dhanus', 'Makara', 'Kumbha', 'Meena'];
 const BHAVA_NAMES = ['Lagna (1st)', 'Dhana (2nd)', 'Sahaja (3rd)', 'Sukha (4th)', 'Putra (5th)', 'Ripu (6th)', 'Kalatra (7th)', 'Mrityu (8th)', 'Dharma (9th)', 'Karma (10th)', 'Labha (11th)', 'Vyaya (12th)'];
 
-// Nakshatra data for Vimshottari Dasha
+// Bhava significations (BPHS Chapters 11-23)
+const BHAVA_SIGNIFICATIONS = {
+  1: { name: 'Lagna (Tanu)', significations: ['Self', 'Body', 'Vitality', 'Personality', 'Head', 'Overall health', 'Life path', 'Appearance'], karaka: 'Sun' },
+  2: { name: 'Dhana', significations: ['Wealth', 'Speech', 'Family', 'Food', 'Face', 'Right eye', 'Early education', 'Accumulated assets'], karaka: 'Jupiter' },
+  3: { name: 'Sahaja', significations: ['Courage', 'Siblings', 'Short journeys', 'Communication', 'Skills', 'Hands', 'Efforts', 'Neighbors'], karaka: 'Mars' },
+  4: { name: 'Sukha', significations: ['Mother', 'Property', 'Vehicles', 'Education', 'Happiness', 'Heart', 'Home', 'Comforts'], karaka: 'Moon' },
+  5: { name: 'Putra', significations: ['Children', 'Intellect', 'Creativity', 'Romance', 'Speculation', 'Mantras', 'Past life merit', 'Stomach'], karaka: 'Jupiter' },
+  6: { name: 'Ripu (Shatru)', significations: ['Enemies', 'Diseases', 'Debts', 'Service', 'Obstacles', 'Maternal uncle', 'Litigation', 'Daily work'], karaka: 'Mars/Saturn' },
+  7: { name: 'Kalatra', significations: ['Spouse', 'Partnership', 'Marriage', 'Business', 'Sexual organs', 'Trade', 'Public relations', 'Death'], karaka: 'Venus' },
+  8: { name: 'Mrityu (Randhra)', significations: ['Longevity', 'Death', 'Occult', 'Transformation', 'Hidden wealth', 'Inheritance', 'Chronic diseases', 'Mysteries'], karaka: 'Saturn' },
+  9: { name: 'Dharma (Bhagya)', significations: ['Fortune', 'Father', 'Guru', 'Religion', 'Long journeys', 'Higher education', 'Dharma', 'Thighs'], karaka: 'Jupiter' },
+  10: { name: 'Karma', significations: ['Career', 'Status', 'Authority', 'Government', 'Profession', 'Knees', 'Public image', 'Actions'], karaka: 'Sun/Mercury/Jupiter' },
+  11: { name: 'Labha', significations: ['Gains', 'Income', 'Friends', 'Elder siblings', 'Fulfillment', 'Left ear', 'Aspirations', 'Networks'], karaka: 'Jupiter' },
+  12: { name: 'Vyaya', significations: ['Losses', 'Expenses', 'Moksha', 'Foreign lands', 'Isolation', 'Bed pleasures', 'Left eye', 'Spirituality'], karaka: 'Saturn' }
+};
+
+// Planetary remedies database (BPHS + Lal Kitab + Traditional)
+const PLANETARY_REMEDIES = {
+  0: { // Sun
+    mantras: ['Om Suryaya Namaha (108 times daily)', 'Aditya Hridaya Stotra (Sundays)', 'Gayatri Mantra (sunrise)'],
+    gemstone: { primary: 'Ruby (Manik)', weight: '3-5 carats', metal: 'Gold/Copper', finger: 'Ring finger', day: 'Sunday sunrise' },
+    donations: ['Wheat', 'Jaggery', 'Red cloth', 'Copper', 'Ruby (if affordable)'],
+    fasting: 'Sundays (sunrise to sunset)',
+    deity: 'Surya Bhagavan',
+    rituals: ['Surya Namaskar (12 rounds daily)', 'Offer water to Sun at sunrise', 'Light ghee lamp to Sun'],
+    simple: ['Eat jaggery before important work', 'Throw copper coin in flowing river', 'Spend time in sunlight', 'Respect father and authority'],
+    spiritual: ['Practice Surya Bhedana Pranayama', 'Meditate facing east at sunrise', 'Chant Gayatri 108 times'],
+    activation: 'Wake before sunrise, offer Arghya to Sun, practice leadership and confidence'
+  },
+  1: { // Moon
+    mantras: ['Om Chandraya Namaha (108 times)', 'Chandra Gayatri', 'Om Shram Shreem Shraum Sah Chandraya Namaha'],
+    gemstone: { primary: 'Pearl (Moti)', weight: '5-7 carats', metal: 'Silver', finger: 'Little finger', day: 'Monday evening' },
+    donations: ['White rice', 'Milk', 'Silver', 'White cloth', 'Camphor'],
+    fasting: 'Mondays',
+    deity: 'Chandra/Shiva',
+    rituals: ['Worship Shiva on Mondays', 'Offer milk to Shiva Linga', 'Rudra Abhishek'],
+    simple: ['Drink water from silver vessel', 'Respect mother', 'Feed white cows', 'Keep water pot at bedside'],
+    spiritual: ['Practice Chandra Bhedana Pranayama', 'Meditate on full moon nights', 'Develop emotional stability'],
+    activation: 'Connect with mother, practice gratitude, nurture others, moon gazing meditation'
+  },
+  2: { // Mars
+    mantras: ['Om Mangalaya Namaha (108 times)', 'Hanuman Chalisa (Tuesdays)', 'Kartikeya Mantras'],
+    gemstone: { primary: 'Red Coral (Moonga)', weight: '5-8 carats', metal: 'Gold/Copper', finger: 'Ring finger', day: 'Tuesday' },
+    donations: ['Red lentils', 'Jaggery', 'Red cloth', 'Copper utensils', 'Wheat bread'],
+    fasting: 'Tuesdays',
+    deity: 'Hanuman/Kartikeya',
+    rituals: ['Hanuman puja on Tuesdays', 'Visit Hanuman temple', 'Recite Hanuman Chalisa'],
+    simple: ['Feed red lentils to birds', 'Respect brothers', 'Exercise under Banyan tree', 'Control anger'],
+    spiritual: ['Practice martial arts or yoga', 'Develop courage through challenges', 'Channel aggression constructively'],
+    activation: 'Physical exercise, competitive sports, assertiveness training, protect the weak'
+  },
+  3: { // Mercury
+    mantras: ['Om Budhaya Namaha (108 times)', 'Vishnu Sahasranama', 'Budha Gayatri'],
+    gemstone: { primary: 'Emerald (Panna)', weight: '3-6 carats', metal: 'Gold', finger: 'Little finger', day: 'Wednesday' },
+    donations: ['Green vegetables', 'Green cloth', 'Books', 'Pens', 'Educational materials'],
+    fasting: 'Wednesdays',
+    deity: 'Vishnu/Ganesha',
+    rituals: ['Vishnu puja', 'Read scriptures', 'Ganesha worship for intelligence'],
+    simple: ['Feed green fodder to cows', 'Donate to students', 'Clean teeth with alum', 'Respect teachers'],
+    spiritual: ['Study sacred texts', 'Practice Bhramari Pranayama', 'Develop discrimination (Viveka)'],
+    activation: 'Learn new skills, write daily, communicate clearly, teach others'
+  },
+  4: { // Jupiter
+    mantras: ['Om Gurave Namaha (108 times)', 'Guru Gayatri', 'Brihaspati Stotra'],
+    gemstone: { primary: 'Yellow Sapphire (Pukhraj)', weight: '3-5 carats', metal: 'Gold', finger: 'Index finger', day: 'Thursday' },
+    donations: ['Yellow cloth', 'Turmeric', 'Gold', 'Books', 'Saffron', 'Ghee'],
+    fasting: 'Thursdays',
+    deity: 'Brihaspati/Vishnu',
+    rituals: ['Guru puja on Thursdays', 'Brihaspati Vrat', 'Feed Brahmins'],
+    simple: ['Wear gold', 'Apply saffron tilak', 'Respect teachers and elders', 'Fill roadside pits'],
+    spiritual: ['Study philosophy', 'Seek spiritual teacher', 'Practice gratitude', 'Teach dharma'],
+    activation: 'Serve guru, study scriptures, practice generosity, mentor others'
+  },
+  5: { // Venus
+    mantras: ['Om Shukraya Namaha (108 times)', 'Shukra Gayatri', 'Lakshmi Mantras'],
+    gemstone: { primary: 'Diamond (Heera)', weight: '1-2 carats', metal: 'Silver/Platinum', finger: 'Middle finger', day: 'Friday' },
+    donations: ['White cloth', 'Sugar', 'Rice', 'Perfume', 'Silver'],
+    fasting: 'Fridays',
+    deity: 'Lakshmi/Shukracharya',
+    rituals: ['Lakshmi puja on Fridays', 'Offer white flowers', 'Durga worship'],
+    simple: ['Use perfume on Fridays', 'Respect women', 'Maintain cleanliness', 'Donate to girls'],
+    spiritual: ['Develop aesthetic sense', 'Practice bhakti yoga', 'Cultivate beauty and harmony'],
+    activation: 'Appreciate art, maintain relationships, practice self-care, create beauty'
+  },
+  6: { // Saturn
+    mantras: ['Om Shanaye Namaha (108 times)', 'Shani Stotra', 'Hanuman Chalisa (Saturdays)'],
+    gemstone: { primary: 'Blue Sapphire (Neelam)', weight: '5-7 carats', metal: 'Silver/Iron', finger: 'Middle finger', day: 'Saturday' },
+    donations: ['Black sesame', 'Iron', 'Black cloth', 'Mustard oil', 'Black urad dal'],
+    fasting: 'Saturdays',
+    deity: 'Shani/Hanuman',
+    rituals: ['Shani puja on Saturdays', 'Light mustard oil lamp', 'Visit Shani temple'],
+    simple: ['Feed crows and dogs', 'Serve the poor', 'Pour mustard oil on ground', 'Respect servants'],
+    spiritual: ['Practice discipline', 'Serve the suffering', 'Develop patience', 'Accept karma'],
+    activation: 'Hard work, discipline, serve elderly, practice detachment, face fears'
+  },
+  7: { // Rahu
+    mantras: ['Om Rahave Namaha (108 times)', 'Rahu Gayatri', 'Durga Mantras'],
+    gemstone: { primary: 'Hessonite (Gomed)', weight: '5-8 carats', metal: 'Silver', finger: 'Middle finger', day: 'Saturday' },
+    donations: ['Black blanket', 'Coconut', 'Mustard', 'Blue cloth', 'Iron'],
+    fasting: 'Saturdays',
+    deity: 'Durga/Kali',
+    rituals: ['Durga puja', 'Kali worship', 'Sarpa puja (snake worship)'],
+    simple: ['Keep fennel under pillow', 'Throw coal in river', 'Feed dogs', 'Donate to sweepers'],
+    spiritual: ['Practice meditation to control mind', 'Transcend illusions', 'Develop intuition'],
+    activation: 'Face fears, break patterns, embrace change, develop psychic abilities'
+  },
+  8: { // Ketu
+    mantras: ['Om Ketave Namaha (108 times)', 'Ketu Gayatri', 'Ganesha Mantras'],
+    gemstone: { primary: 'Cat\'s Eye (Lehsunia)', weight: '5-7 carats', metal: 'Silver', finger: 'Middle finger', day: 'Thursday' },
+    donations: ['Black/white dog', 'Sesame', 'Blanket', 'Flag', 'Spiritual books'],
+    fasting: 'Thursdays',
+    deity: 'Ganesha/Kartikeya',
+    rituals: ['Ganesha puja', 'Sarpa puja', 'Ancestor worship'],
+    simple: ['Feed dogs (especially spotted)', 'Donate 100 chapatis to dogs', 'Keep a dog'],
+    spiritual: ['Practice moksha sadhana', 'Develop detachment', 'Past life regression', 'Spiritual liberation'],
+    activation: 'Meditation, solitude, spiritual practices, let go of attachments, serve saints'
+  }
+};
+
+// Nakshatra data
 const NAKSHATRAS = [
-  { name: 'Ashwini', lord: 7, start: 0 },
-  { name: 'Bharani', lord: 5, start: 13.333333 },
-  { name: 'Krittika', lord: 0, start: 26.666667 },
-  { name: 'Rohini', lord: 1, start: 40 },
-  { name: 'Mrigashira', lord: 2, start: 53.333333 },
-  { name: 'Ardra', lord: 7, start: 66.666667 },
-  { name: 'Punarvasu', lord: 4, start: 80 },
-  { name: 'Pushya', lord: 6, start: 93.333333 },
-  { name: 'Ashlesha', lord: 3, start: 106.666667 },
-  { name: 'Magha', lord: 7, start: 120 },
-  { name: 'Purva Phalguni', lord: 5, start: 133.333333 },
-  { name: 'Uttara Phalguni', lord: 0, start: 146.666667 },
-  { name: 'Hasta', lord: 1, start: 160 },
-  { name: 'Chitra', lord: 2, start: 173.333333 },
-  { name: 'Swati', lord: 7, start: 186.666667 },
-  { name: 'Vishakha', lord: 4, start: 200 },
-  { name: 'Anuradha', lord: 6, start: 213.333333 },
-  { name: 'Jyeshta', lord: 3, start: 226.666667 },
-  { name: 'Mula', lord: 7, start: 240 },
-  { name: 'Purva Ashadha', lord: 5, start: 253.333333 },
-  { name: 'Uttara Ashadha', lord: 0, start: 266.666667 },
-  { name: 'Shravana', lord: 1, start: 280 },
-  { name: 'Dhanishta', lord: 2, start: 293.333333 },
-  { name: 'Shatabhisha', lord: 7, start: 306.666667 },
-  { name: 'Purva Bhadrapada', lord: 4, start: 320 },
-  { name: 'Uttara Bhadrapada', lord: 6, start: 333.333333 },
+  { name: 'Ashwini', lord: 7, start: 0 }, { name: 'Bharani', lord: 5, start: 13.333333 },
+  { name: 'Krittika', lord: 0, start: 26.666667 }, { name: 'Rohini', lord: 1, start: 40 },
+  { name: 'Mrigashira', lord: 2, start: 53.333333 }, { name: 'Ardra', lord: 7, start: 66.666667 },
+  { name: 'Punarvasu', lord: 4, start: 80 }, { name: 'Pushya', lord: 6, start: 93.333333 },
+  { name: 'Ashlesha', lord: 3, start: 106.666667 }, { name: 'Magha', lord: 7, start: 120 },
+  { name: 'Purva Phalguni', lord: 5, start: 133.333333 }, { name: 'Uttara Phalguni', lord: 0, start: 146.666667 },
+  { name: 'Hasta', lord: 1, start: 160 }, { name: 'Chitra', lord: 2, start: 173.333333 },
+  { name: 'Swati', lord: 7, start: 186.666667 }, { name: 'Vishakha', lord: 4, start: 200 },
+  { name: 'Anuradha', lord: 6, start: 213.333333 }, { name: 'Jyeshta', lord: 3, start: 226.666667 },
+  { name: 'Mula', lord: 7, start: 240 }, { name: 'Purva Ashadha', lord: 5, start: 253.333333 },
+  { name: 'Uttara Ashadha', lord: 0, start: 266.666667 }, { name: 'Shravana', lord: 1, start: 280 },
+  { name: 'Dhanishta', lord: 2, start: 293.333333 }, { name: 'Shatabhisha', lord: 7, start: 306.666667 },
+  { name: 'Purva Bhadrapada', lord: 4, start: 320 }, { name: 'Uttara Bhadrapada', lord: 6, start: 333.333333 },
   { name: 'Revati', lord: 3, start: 346.666667 }
 ];
 
-// Vimshottari Dasha periods (in years)
-const DASHA_PERIODS = [6, 10, 7, 17, 16, 20, 19, 7, 18]; // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Ketu, Rahu
-const DASHA_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8]; // Ketu, Venus, Sun, Moon, Mars, Rahu, Jupiter, Saturn, Mercury
-
-// Lordship and dignity data
+const DASHA_PERIODS = [6, 10, 7, 17, 16, 20, 19, 7, 18];
 const RASHI_LORDS = [2, 5, 3, 1, 0, 3, 5, 2, 4, 6, 6, 4];
 const NATURAL_BENEFICS = [1, 3, 4, 5];
 const NATURAL_MALEFICS = [0, 2, 6];
@@ -71,14 +173,8 @@ const EXALTATION = { 0: 0, 1: 1, 2: 9, 3: 5, 4: 3, 5: 11, 6: 6 };
 const DEBILITATION = { 0: 6, 1: 7, 2: 3, 3: 11, 4: 9, 5: 5, 6: 0 };
 const OWN_SIGNS = { 0: [4], 1: [3], 2: [0, 7], 3: [2, 5], 4: [8, 11], 5: [1, 6], 6: [9, 10] };
 const MOOLATRIKONA = { 0: 4, 1: 1, 2: 0, 3: 5, 4: 8, 5: 6, 6: 10 };
-
-// Friend/Enemy relationships
-const FRIENDS = {
-  0: [1, 2, 4], 1: [0, 3], 2: [0, 1, 4], 3: [0, 5], 4: [0, 1, 2], 5: [3, 6], 6: [3, 5]
-};
-const ENEMIES = {
-  0: [5, 6], 1: [], 2: [3], 3: [1], 4: [3, 5], 5: [0, 1], 6: [0, 1, 2]
-};
+const FRIENDS = { 0: [1, 2, 4], 1: [0, 3], 2: [0, 1, 4], 3: [0, 5], 4: [0, 1, 2], 5: [3, 6], 6: [3, 5] };
+const ENEMIES = { 0: [5, 6], 1: [], 2: [3], 3: [1], 4: [3, 5], 5: [0, 1], 6: [0, 1, 2] };
 
 function getJulianDay(year, month, day, hour, minute) {
   const utcHour = hour + minute / 60;
@@ -116,7 +212,7 @@ function getDegreeInRashi(longitude) {
   return longitude % 30;
 }
 
-function getGrahaDignity(grahaIndex, rashi, degree) {
+function getGrahaDignity(grahaIndex, rashi) {
   if (EXALTATION[grahaIndex] === rashi) return 'Exalted (Uccha)';
   if (DEBILITATION[grahaIndex] === rashi) return 'Debilitated (Neecha)';
   if (OWN_SIGNS[grahaIndex] && OWN_SIGNS[grahaIndex].includes(rashi)) return 'Own Sign (Sva-kshetra)';
@@ -142,43 +238,22 @@ function getGrahaDrishti(grahaIndex) {
   return aspects;
 }
 
-// Calculate Navamsa (D9)
 function calculateNavamsa(longitude) {
   const rashi = getRashi(longitude);
   const degree = getDegreeInRashi(longitude);
   const navamsaPart = Math.floor(degree / 3.333333);
-  
   const isOdd = rashi % 2 === 0;
-  let navamsaRashi;
-  
-  if (isOdd) {
-    navamsaRashi = (rashi + navamsaPart) % 12;
-  } else {
-    navamsaRashi = ((rashi + 8) + navamsaPart) % 12;
-  }
-  
-  return navamsaRashi;
+  return isOdd ? (rashi + navamsaPart) % 12 : ((rashi + 8) + navamsaPart) % 12;
 }
 
-// Calculate Dashamsa (D10)
 function calculateDashamsa(longitude) {
   const rashi = getRashi(longitude);
   const degree = getDegreeInRashi(longitude);
   const dashamsaPart = Math.floor(degree / 3);
-  
   const isOdd = rashi % 2 === 0;
-  let dashamsaRashi;
-  
-  if (isOdd) {
-    dashamsaRashi = (rashi + dashamsaPart) % 12;
-  } else {
-    dashamsaRashi = ((rashi + 8) + dashamsaPart) % 12;
-  }
-  
-  return dashamsaRashi;
+  return isOdd ? (rashi + dashamsaPart) % 12 : ((rashi + 8) + dashamsaPart) % 12;
 }
 
-// Vimshottari Dasha calculation
 function calculateVimshottariDasha(moonLongitude, birthDate) {
   const nakshatra = NAKSHATRAS.find((n, i) => {
     const nextStart = i < 26 ? NAKSHATRAS[i + 1].start : 360;
@@ -187,9 +262,7 @@ function calculateVimshottariDasha(moonLongitude, birthDate) {
   
   const lordIndex = nakshatra.lord;
   const progressInNakshatra = moonLongitude - nakshatra.start;
-  const totalNakshatraSpan = 13.333333;
-  const balanceRatio = (totalNakshatraSpan - progressInNakshatra) / totalNakshatraSpan;
-  
+  const balanceRatio = (13.333333 - progressInNakshatra) / 13.333333;
   const fullPeriod = DASHA_PERIODS[lordIndex];
   const balanceYears = fullPeriod * balanceRatio;
   
@@ -219,21 +292,16 @@ function calculateVimshottariDasha(moonLongitude, birthDate) {
   return { nakshatra: nakshatra.name, dashas };
 }
 
-// Neecha Bhanga (Debilitation Cancellation) check
 function checkNeechaBhanga(grahaIndex, rashi, grahas, lagnaRashi) {
   if (DEBILITATION[grahaIndex] !== rashi) return null;
   
   const cancellations = [];
-  
-  // Rule 1: Lord of debilitation sign is in kendra from Lagna
   const debilLord = RASHI_LORDS[rashi];
   const debilLordGraha = grahas[debilLord];
-  const debilLordBhava = debilLordGraha.bhavaIndex;
-  if ([1, 4, 7, 10].includes(debilLordBhava)) {
+  if ([1, 4, 7, 10].includes(debilLordGraha.bhavaIndex)) {
     cancellations.push('Lord of debilitation sign in Kendra from Lagna');
   }
   
-  // Rule 2: Exalted lord of the sign where debilitated planet is placed
   const exaltLord = Object.keys(EXALTATION).find(k => EXALTATION[k] === rashi);
   if (exaltLord) {
     const exaltLordGraha = grahas[parseInt(exaltLord)];
@@ -242,7 +310,6 @@ function checkNeechaBhanga(grahaIndex, rashi, grahas, lagnaRashi) {
     }
   }
   
-  // Rule 3: Debilitated planet in kendra from Moon
   const moonRashi = grahas[1].rashiIndex;
   const diff = (rashi - moonRashi + 12) % 12;
   if ([0, 3, 6, 9].includes(diff)) {
@@ -252,12 +319,10 @@ function checkNeechaBhanga(grahaIndex, rashi, grahas, lagnaRashi) {
   return cancellations.length > 0 ? cancellations : null;
 }
 
-// Classical Yoga detection
 function detectYogas(grahas, lagnaRashi) {
   const yogas = [];
   
-  // Pancha Mahapurusha Yogas
-  const mahapurushaGrahas = [2, 3, 4, 5, 6]; // Mars, Mercury, Jupiter, Venus, Saturn
+  const mahapurushaGrahas = [2, 3, 4, 5, 6];
   mahapurushaGrahas.forEach(gi => {
     const graha = grahas[gi];
     if ((graha.dignity.includes('Exalted') || graha.dignity.includes('Own Sign')) && 
@@ -271,7 +336,6 @@ function detectYogas(grahas, lagnaRashi) {
     }
   });
   
-  // Gaja Kesari Yoga
   const jupiter = grahas[4];
   const moon = grahas[1];
   const diff = Math.abs(jupiter.rashiIndex - moon.rashiIndex);
@@ -283,7 +347,6 @@ function detectYogas(grahas, lagnaRashi) {
     });
   }
   
-  // Neecha Bhanga Raja Yoga
   grahas.forEach((graha, gi) => {
     if (graha.dignity.includes('Debilitated')) {
       const cancellation = checkNeechaBhanga(gi, graha.rashiIndex, grahas, lagnaRashi);
@@ -300,11 +363,8 @@ function detectYogas(grahas, lagnaRashi) {
   return yogas;
 }
 
-// Simplified Shadbala calculation (conceptual)
 function calculateShadbala(graha, grahaIndex, jd, latitude) {
   let total = 0;
-  
-  // Sthana Bala (Positional Strength)
   if (graha.dignity.includes('Exalted')) total += 60;
   else if (graha.dignity.includes('Own Sign')) total += 45;
   else if (graha.dignity.includes('Moolatrikona')) total += 50;
@@ -312,37 +372,28 @@ function calculateShadbala(graha, grahaIndex, jd, latitude) {
   else if (graha.dignity.includes('Enemy')) total += 15;
   else total += 22.5;
   
-  // Dik Bala (Directional Strength)
   const dikBalaHouses = { 0: 10, 1: 4, 2: 10, 3: 1, 4: 1, 5: 4, 6: 7 };
   if (dikBalaHouses[grahaIndex] === graha.bhavaIndex) total += 60;
   
-  // Kaal Bala (Temporal Strength) - simplified
   const isDaytime = graha.bhavaIndex <= 6;
   if ([0, 2, 4].includes(grahaIndex) && isDaytime) total += 30;
   if ([1, 5, 6].includes(grahaIndex) && !isDaytime) total += 30;
   
-  // Chesta Bala (Motional Strength)
   if (graha.speed > 0) total += 30;
-  else if (graha.speed < 0) total += 60; // Retrograde
+  else if (graha.speed < 0) total += 60;
   
-  // Naisargika Bala (Natural Strength)
   const naisargika = [60, 51.43, 17.14, 25.70, 34.28, 42.85, 8.57];
   total += naisargika[grahaIndex] || 0;
   
-  return (total / 60).toFixed(2); // Convert to Rupas
+  return (total / 60).toFixed(2);
 }
 
-// Ashtakavarga calculation (simplified)
 function calculateAshtakavarga(grahas) {
   const ashtakavarga = Array(12).fill(0);
-  
   grahas.forEach((graha, gi) => {
-    if (gi >= 7) return; // Skip Rahu/Ketu
-    
-    // Simplified: Add points based on benefic/malefic nature
+    if (gi >= 7) return;
     const isBenefic = NATURAL_BENEFICS.includes(gi);
     const points = isBenefic ? 5 : 3;
-    
     for (let house = 0; house < 12; house++) {
       const diff = (house - graha.rashiIndex + 12) % 12;
       if ([0, 2, 4, 5, 8, 9, 11].includes(diff)) {
@@ -350,8 +401,21 @@ function calculateAshtakavarga(grahas) {
       }
     }
   });
-  
   return ashtakavarga;
+}
+
+// Generate detailed bhava analysis
+function generateBhavaAnalysis(bhavaIndex, bhavaLord, grahasInBhava, lagnaLord) {
+  const bhava = BHAVA_SIGNIFICATIONS[bhavaIndex];
+  return {
+    bhavaNumber: bhavaIndex,
+    bhavaName: bhava.name,
+    significations: bhava.significations,
+    karaka: bhava.karaka,
+    lord: bhavaLord,
+    grahasPresent: grahasInBhava,
+    strength: grahasInBhava.length > 0 ? 'Occupied' : 'Empty'
+  };
 }
 
 app.post('/api/calculate-chart', (req, res) => {
@@ -395,7 +459,7 @@ app.post('/api/calculate-chart', (req, res) => {
       const rashi = getRashi(longitude);
       const degree = getDegreeInRashi(longitude);
       const bhava = getBhavaFromLagna(longitude, siderealLagna);
-      const dignity = getGrahaDignity(i, rashi, degree);
+      const dignity = getGrahaDignity(i, rashi);
       const drishti = getGrahaDrishti(i);
       const navamsa = calculateNavamsa(longitude);
       const dashamsa = calculateDashamsa(longitude);
@@ -413,28 +477,32 @@ app.post('/api/calculate-chart', (req, res) => {
         navamsa: RASHI_NAMES[navamsa],
         dashamsa: RASHI_NAMES[dashamsa],
         speed: speed.toFixed(4),
-        isRetrograde: speed < 0
+        isRetrograde: speed < 0,
+        remedies: PLANETARY_REMEDIES[i]
       });
     }
     
     const lagnaLordIndex = RASHI_LORDS[lagnaRashi];
     const lagnaLord = grahas[lagnaLordIndex];
     
-    // Calculate Shadbala for all planets
+    // Bhava analysis
+    const bhavaAnalysis = [];
+    for (let b = 1; b <= 12; b++) {
+      const lordIndex = RASHI_LORDS[(lagnaRashi + b - 1) % 12];
+      const grahasInBhava = grahas.filter(g => g.bhavaIndex === b);
+      bhavaAnalysis.push(generateBhavaAnalysis(b, GRAHA_NAMES[lordIndex], grahasInBhava.map(g => g.name), lagnaLord.name));
+    }
+    
     const shadbala = grahas.map((g, i) => ({
       planet: g.name,
       strength: calculateShadbala(g, i, jd, latitude)
     }));
     
-    // Calculate Vimshottari Dasha
     const moonLongitude = grahas[1].longitude;
     const birthDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const dashaSystem = calculateVimshottariDasha(parseFloat(moonLongitude), birthDate);
     
-    // Detect Yogas
     const yogas = detectYogas(grahas, lagnaRashi);
-    
-    // Calculate Ashtakavarga
     const ashtakavarga = calculateAshtakavarga(grahas);
     
     res.json({
@@ -449,6 +517,7 @@ app.post('/api/calculate-chart', (req, res) => {
         navamsa: RASHI_NAMES[calculateNavamsa(siderealLagna)]
       },
       grahas: grahas,
+      bhavaAnalysis: bhavaAnalysis,
       shadbala: shadbala,
       vimshottariDasha: dashaSystem,
       yogas: yogas,
