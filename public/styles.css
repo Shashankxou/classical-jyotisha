@@ -43,9 +43,14 @@ h1 {
 .warning {
   color: #ff6b6b;
   font-weight: bold;
-  font-size: 1em;
+  font-size: 0.95em;
   margin-top: 10px;
   line-height: 1.8;
+}
+
+.warning-text {
+  color: #ff6b6b;
+  font-weight: bold;
 }
 
 .input-section {
@@ -187,6 +192,106 @@ input:focus {
   color: #e0e0e0;
 }
 
+/* Bhava Grid */
+.bhava-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.bhava-card {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.bhava-card h4 {
+  color: #d4af37;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+.bhava-card p {
+  margin: 5px 0;
+  font-size: 0.9em;
+}
+
+.significations-list {
+  margin-left: 20px;
+  margin-top: 5px;
+  font-size: 0.85em;
+  color: #b8860b;
+}
+
+.significations-list li {
+  margin: 3px 0;
+}
+
+/* Remedy Cards */
+.remedy-card {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  margin-bottom: 20px;
+}
+
+.remedy-card h4 {
+  color: #d4af37;
+  margin-bottom: 15px;
+  font-size: 1.3em;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  padding-bottom: 8px;
+}
+
+.remedy-card.universal {
+  border: 2px solid #4ecca3;
+  background: rgba(78, 204, 163, 0.05);
+}
+
+.remedy-card.universal h4 {
+  color: #4ecca3;
+}
+
+.remedy-section {
+  margin: 15px 0;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 5px;
+}
+
+.remedy-section h5 {
+  color: #ffd700;
+  margin-bottom: 10px;
+  font-size: 1.05em;
+}
+
+.remedy-section ul {
+  margin-left: 20px;
+  margin-top: 8px;
+}
+
+.remedy-section li {
+  margin: 5px 0;
+  color: #e0e0e0;
+}
+
+.remedy-section p {
+  margin: 5px 0;
+}
+
+.remedy-section em {
+  color: #b8860b;
+  font-size: 0.9em;
+}
+
+.remedy-section.activation {
+  background: rgba(212, 175, 55, 0.1);
+  border-left: 3px solid #d4af37;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -260,6 +365,12 @@ h4 {
   font-size: 1.2em;
 }
 
+h5 {
+  color: #ffd700;
+  margin-bottom: 10px;
+  font-size: 1em;
+}
+
 footer {
   text-align: center;
   padding: 30px;
@@ -286,6 +397,10 @@ footer strong {
   }
   
   .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .bhava-grid {
     grid-template-columns: 1fr;
   }
   
